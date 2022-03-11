@@ -6,107 +6,172 @@
  * @flow strict-local
  */
 
-import React from 'react';
-import type {Node} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import React, {useState} from 'react';
+import {StyleSheet, Text, View, Button, TouchableOpacity} from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const App = () => {
+  let [text, setText] = useState('');
+  let [result, setResult] = useState('');
 
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const buttonPressed = txt => {
+    // console.log(text);
+    if (txt === '=') {
+      return validate() && calculateResult();
+    }
+    setText(text + txt);
+  };
+
+  const validate = () => {
+    const txt = text;
+    switch (text.slice(-1)) {
+      case '+':
+      case '-':
+      case '*':
+      case '/':
+        return false;
+    }
+    return true;
+  };
+  const calculateResult = () => {
+    const txt = text;
+    setResult(eval(txt));
+  };
+  let operations = ['DEL', '+', '-', '*', '/'];
+  const operate = operation => {
+    switch (operation) {
+      case 'DEL':
+        const txt = text.split('');
+        txt.pop();
+        setText(txt.join(''));
+        break;
+      case '+':
+      case '-':
+      case '*':
+      case '/':
+        const lastChar = text.split('').pop();
+        if (operations.indexOf(lastChar) > 0) return;
+        if (text == '') return;
+        setText(text + operation);
+    }
+  };
+
+  let rows = [];
+  let nums = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9],
+    ['.', 0, '='],
+  ];
+  for (let i = 0; i < nums.length; i++) {
+    let row = [];
+    for (let j = 0; j < nums[i].length; j++) {
+      row.push(
+        <TouchableOpacity
+          key={nums[i][j]}
+          style={styles.btn}
+          onPress={() => buttonPressed(nums[i][j])}>
+          <Text style={styles.btnText}>{nums[i][j]}</Text>
+        </TouchableOpacity>,
+      );
+    }
+    rows.push(<View style={styles.row}>{row}</View>);
+  }
+
+  let ops = [];
+  for (let i = 0; i < operations.length; i++) {
+    ops.push(
+      <TouchableOpacity
+        key={operations[i]}
+        style={styles.btn}
+        onPress={() => operate(operations[i])}>
+        <Text style={[styles.btnText, styles.white]}>{operations[i]}</Text>
+      </TouchableOpacity>,
+    );
+  }
+
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+    <View style={styles.container}>
+      <View style={styles.result}>
+        <Text style={styles.resultText}>{text}</Text>
+      </View>
+      <View style={styles.calculation}>
+        <Text style={styles.calculationText}>{result}</Text>
+      </View>
+      <View style={styles.buttons}>
+        <View style={styles.numbers}>{rows}</View>
+        <View style={styles.operations}>{ops}</View>
+      </View>
+      <View style={styles.builder}>
+        <Text style={styles.buildText}>Built by Deevanshu Kumawat</Text>
+      </View>
     </View>
   );
 };
 
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits. Okay boss. Deevanshu is
-            great.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
-
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  row: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'space-around',
+    alignItems: 'center',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+
+  result: {
+    flex: 2,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
   },
-  highlight: {
-    fontWeight: '700',
+  resultText: {
+    fontSize: 40,
+    color: 'black',
+  },
+  calculation: {
+    flex: 1,
+    backgroundColor: '#232323',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+  },
+  calculationText: {
+    fontSize: 30,
+    color: 'white',
+  },
+
+  btn: {
+    flex: 1,
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+  },
+  btnText: {
+    fontSize: 40,
+  },
+  buttons: {
+    flexGrow: 7,
+    flexDirection: 'row',
+  },
+  white: {color: 'white'},
+  numbers: {
+    flex: 3,
+    backgroundColor: '#434343',
+  },
+  operations: {
+    flex: 1,
+    backgroundColor: '#636363',
+    justifyContent: 'space-around',
+  },
+  builder: {
+    flex: 0.5,
+    justifyContent: 'center',
+    alignitems: 'stretch',
+  },
+  buildText: {
+    fontSize: 15,
+    alignItems: 'center',
+    textAlign: 'center',
   },
 });
 
